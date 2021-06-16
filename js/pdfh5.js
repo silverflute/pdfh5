@@ -844,7 +844,8 @@
 			},
 			setContainerY: function(y) {
 				y = y.toFixed(2);
-				return this.container.height(y);
+				// return this.container.height(y);
+				return y;
 			},
 			setupMarkup: function() {
 				this.container = $('<div class="pinch-zoom-container"></div>');
@@ -895,7 +896,7 @@
 					var transform3d = 'scale3d(' + zoomFactor + ', ' + zoomFactor + ',1) ' +
 						'translate3d(' + offsetX + 'px,' + offsetY + 'px,0px)',
 						transform2d = 'scale(' + zoomFactor + ', ' + zoomFactor + ') ' +
-						'translate(' + offsetX + 'px,' + offsetY + 'px)',
+							'translate(' + offsetX + 'px,' + offsetY + 'px)',
 						removeClone = (function() {
 							if (this.clone) {
 								this.clone.remove();
@@ -1215,11 +1216,16 @@
 			this.progressDom = this.progress[0];
 			this.backTop = this.container.find('.backTop');
 			this.loading = this.container.find('.loading');
+			this.showPageNum=true;
 			if (!this.options.loadingBar) {
 				this.loadingBar.hide()
 			}
-			var containerH = this.container.height(),
-				height = containerH * (1 / 3);
+			var containerH =$(self.container).outerHeight(true),
+				zhtheaderH=$(".zht-header").outerHeight(true),
+				templateTitle=$(".template_title").outerHeight(true),
+				templateFooter=$(".template_footer").outerHeight(true),
+				topH=zhtheaderH+zhtheaderH,
+				height =  $(window).height()-zhtheaderH-templateTitle-templateFooter;
 
 			if (!this.options.scrollEnable) {
 				this.viewerContainer.css({
@@ -1230,13 +1236,14 @@
 					"overflow": "auto"
 				})
 			}
-			viewerContainer.addEventListener('scroll', function() {
-				var scrollTop = viewerContainer.scrollTop;
+			//修改监听翻页逻辑
+			window.addEventListener('scroll',function(){
+				var scrollTop= $(window).scrollTop()
 				if (scrollTop >= 150) {
 					if (self.options.backTop) {
 						self.backTop.show();
 					}
-				} else {
+				}else {
 					if (self.options.backTop) {
 						self.backTop.fadeOut(200);
 					}
@@ -1245,27 +1252,30 @@
 					self.pages = self.viewerContainer.find('.pageContainer');
 				}
 				clearTimeout(self.timer);
-				if (self.options.pageNum && self.pageNum) {
+				if (self.options.pageNum && self.pageNum && self.showPageNum) {
 					self.pageNum.show();
 				}
-				var h = containerH;
+				var h  =$(self.container).outerHeight(true)+topH-height;
+
+
 				if (self.pages) {
 					self.pages.each(function(index, obj) {
 						var top = obj.getBoundingClientRect().top;
 						var bottom = obj.getBoundingClientRect().bottom;
-						if (top <= height && bottom > height) {
+						if (top <= topH && bottom > topH) {
 							if (self.options.pageNum) {
 								self.pageNow.text(index + 1)
 							}
 							self.currentNum = index + 1;
 						}
-						if (top <= h && bottom > h) {
-							self.cacheNum = index + 1;
-						}
 					})
 				}
-				if (scrollTop + self.container.height() >= self.viewer[0].offsetHeight) {
-					self.pageNow.text(self.totalNum)
+				if (scrollTop  >=h) {
+					self.showPageNum=false;
+					self.pageNow.text(self.totalNum);
+					self.pageNum.fadeOut(200);
+				}else {
+					self.showPageNum=true;
 				}
 				if (scrollTop === 0) {
 					self.pageNow.text(1)
@@ -1290,7 +1300,7 @@
 						}
 					}
 					if (self.cache[(self.totalNum - 1) + ""] && self.cache[(self.totalNum - 1) + ""].loaded && !self.cache[self.totalNum +
-							""].loaded) {
+					""].loaded) {
 						var page = self.cache[self.totalNum + ""].page;
 						var container = self.cache[self.totalNum + ""].container;
 						var pageNum = self.totalNum;
@@ -1310,6 +1320,7 @@
 					}
 				}
 			})
+
 			this.backTop.on('click tap', function() {
 				var mart = self.viewer.css('transform');
 				var arr = mart.replace(/[a-z\(\)\s]/g, '').split(',');
@@ -1327,9 +1338,9 @@
 					self.pinchZoom.offset.y = 0;
 					self.pinchZoom.lastclientY = 0;
 				}
-				self.viewerContainer.animate({
-					scrollTop: 0
-				}, 300)
+				//控制页面滚动条
+				$("html,body").animate({scrollTop: 0}, 300);
+
 				var arr1 = self.eventType["backTop"];
 				if (arr1 && arr1 instanceof Array) {
 					for (var i = 0; i < arr1.length; i++) {
