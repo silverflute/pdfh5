@@ -1238,6 +1238,7 @@
 			}
 			//修改监听翻页逻辑
 			$(window).off("scroll").on("scroll",function(){
+				console.log("scroll");
 				var scrollTop= $(window).scrollTop()
 				if (scrollTop >= 150) {
 					if (self.options.backTop) {
