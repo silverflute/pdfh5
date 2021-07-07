@@ -2030,6 +2030,7 @@
 			this.progress = null;
 			this.loadedCount = 0;
 			this.timer = null;
+			$(window).off("scroll");
 			callback && callback.call(this)
 			var arr = this.eventType["destroy"];
 			if (arr && arr instanceof Array) {
