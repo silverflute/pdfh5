@@ -1237,7 +1237,7 @@
 				})
 			}
 			//修改监听翻页逻辑
-			window.addEventListener('scroll',function(){
+			$(window).off("scroll").on("scroll",function(){
 				var scrollTop= $(window).scrollTop()
 				if (scrollTop >= 150) {
 					if (self.options.backTop) {
